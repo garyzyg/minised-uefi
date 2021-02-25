@@ -1,0 +1,37 @@
+version: '{branch}-{build}'
+image: Visual Studio 2015
+skip_non_tags: true
+platform:
+- x64
+init:
+- cmd: IF %APPVEYOR_REPO_TAG%==true appveyor UpdateBuild -Version %APPVEYOR_REPO_TAG_NAME%-%APPVEYOR_BUILD_NUMBER%
+before_build:
+- cmd: >-
+    appveyor DownloadFile http://dl.exactcode.de/oss/minised/minised-%APPVEYOR_REPO_TAG_NAME%.tar.gz
+
+    appveyor DownloadFile http://downloads.sourceforge.net/edk2/UDK2010.SR1.UP1.Complete.MyWorkSpace.zip
+
+    appveyor DownloadFile http://downloads.sourceforge.net/edk2/EADK_B1_Release.zip
+
+    FOR %%J IN (0 1) DO FOR %%I IN (*.zip) DO 7z x %%I -aos& DEL %%I
+
+    FOR %%J IN (MyWorkSpace) DO FOR /F "DELIMS=" %%I IN ('DIR /B ^| FIND /V "build.bat" ^| FIND /V "%%J"') DO MOVE /Y %%I %%J
+
+    CD MyWorkSpace
+
+    FOR /F "TOKENS=1 DELIMS=-" %%I IN ("%APPVEYOR_PROJECT_NAME%") DO tar --strip-components=1 -C %%I -xf *.tar.gz
+build_script:
+- cmd: ..\build.bat
+after_build:
+- cmd: FOR /F "TOKENS=1 DELIMS=-" %%I IN ("%APPVEYOR_PROJECT_NAME%") DO FOR /F "DELIMS=" %%J IN ('DIR /B /S Build\*.efi ^| FIND /V "DEBUG" ^| FIND /V "OUTPUT"') DO PUSHD& CD %%~dpJ\..& 7z a %WORKSPACE%\..\%%I.zip *\*.efi& POPD
+artifacts:
+- path: '*.zip'
+  name: minised
+deploy:
+- provider: GitHub
+  tag: $(APPVEYOR_REPO_TAG_NAME)
+  auth_token:
+    secure: d70dnZPFNfELL8ysvc7qK5wbZA3pshmlTyJTT+AHyolOkVd/zf6+Xxn0OkTN4abz
+  artifact: /.*\.zip/
+  on:
+    APPVEYOR_REPO_TAG: true

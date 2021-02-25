@@ -1,0 +1,48 @@
+[Defines]
+  INF_VERSION                    = 0x00010006
+  BASE_NAME                      = minised
+  FILE_GUID                      = F671C262-114D-4A77-AFAD-A235858F6CFA
+  MODULE_TYPE                    = UEFI_APPLICATION
+  VERSION_STRING                 = 1.0
+  ENTRY_POINT                    = ShellCEntryLib
+
+[Sources]
+  sed.h
+  sedcomp.c
+  sedexec.c
+
+[Packages]
+  MdePkg/MdePkg.dec
+  ShellPkg/ShellPkg.dec
+
+  StdLib/StdLib.dec
+
+[LibraryClasses]
+  ShellCEntryLib
+  UefiLib
+
+  LibC
+  LibStdLib
+  ShellLib
+  FileHandleLib
+  HiiLib
+  UefiHiiServicesLib
+  SortLib
+  LibCType
+  LibSignal
+  PathLib
+  LibStdio
+  LibGdtoa
+  LibLocale
+  LibString
+  LibTime
+  LibUefi
+  LibGen
+  DevUtility
+  LibWchar
+  DevConsole
+
+  DevShell
+
+[BuildOptions]
+  MSFT:*_*_*_CC_FLAGS = /wd4244 /wd4706 /wd4701
