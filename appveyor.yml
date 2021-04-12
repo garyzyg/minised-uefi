@@ -1,13 +1,13 @@
 version: '{branch}-{build}'
 image: Visual Studio 2015
-skip_non_tags: true
+skip_non_tags: false
 platform:
 - x64
 init:
 - cmd: IF %APPVEYOR_REPO_TAG%==true appveyor UpdateBuild -Version %APPVEYOR_REPO_TAG_NAME%-%APPVEYOR_BUILD_NUMBER%
 before_build:
 - cmd: >-
-    appveyor DownloadFile http://dl.exactcode.de/oss/minised/minised-%APPVEYOR_REPO_TAG_NAME%.tar.gz
+    IF %APPVEYOR_REPO_TAG%==true appveyor DownloadFile http://dl.exactcode.de/oss/minised/minised-%APPVEYOR_REPO_TAG_NAME%.tar.gz
 
     appveyor DownloadFile http://downloads.sourceforge.net/edk2/UDK2010.SR1.UP1.Complete.MyWorkSpace.zip
 
@@ -19,7 +19,9 @@ before_build:
 
     CD MyWorkSpace
 
-    FOR /F "TOKENS=1 DELIMS=-" %%I IN ("%APPVEYOR_PROJECT_NAME%") DO tar --strip-components=1 -C %%I -xf *.tar.gz
+    IF %APPVEYOR_REPO_TAG%==true FOR /F "TOKENS=1 DELIMS=-" %%I IN ("%APPVEYOR_PROJECT_NAME%") DO tar --strip-components=1 -C %%I -xf *.tar.gz
+
+    IF %APPVEYOR_REPO_TAG%==false FOR /F "TOKENS=1 DELIMS=-" %%I IN ("%APPVEYOR_PROJECT_NAME%") DO git svn clone -r HEAD http://svn.exactcode.de/minised/trunk %%I
 build_script:
 - cmd: ..\build.bat
 after_build:
